@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}My Home Template{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static "assets/css/default.css" %}"/>
+    </head>
+    <body>
+        <div id="page">
+            <div id="sidebar">
+                {% block sidebar %}
+                    <ul>
+                        <li><a href="/subscriber">Subscriber</a></li>
+                        <li><a href="/cdr">CDR</a></li>
+                        <li><a href="/trunk">TRUNK</a></li>
+                        <li><a href="/lcr">LCR</a></li>
+                        <li><a href="/did">DID</a></li>
+                        <li><a href="/ivr">IVR</a></li>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
+                {% endblock %}
+            </div>
+            <div id="content">
+                {% block content %}
+                    This is the area content block
+                {% endblock %}
+            </div>
+        </div>
+    </body>
+</html>
