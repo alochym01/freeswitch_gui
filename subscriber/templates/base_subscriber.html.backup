@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}Subscriber Home{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static "assets/css/default.css" %}"/>
+    </head>
+    <body>
+        <div id="page">
+            <div id="sidebar">
+                {% block sidebar %}
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="subscriber/add/">Add</a></li>
+                        <li><a href="subscriber/edit/">Edit</a></li>
+                        <li><a href="subscriber/delete/">Delete</a><li>
+                    </ul>
+                {% endblock %}
+            </div>
+            <div id="content">
+                {% block content %}
+                    This is the area content block
+                {% endblock %}
+                <img src="{% static "assets/images/python-logo.gif" %}" width="200"/>
+            </div>
+        </div>
+    </body>
+</html>
