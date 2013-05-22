@@ -1,0 +1,53 @@
+1.  define table and columm of table in the app - models.py
+2.  define form that contains all the columm in models - form_add.py
+3.  define a html file to render for the form - add_subscriber.html
+4.  define views for the form that creat in step 2 - views.py
+5.  example:
+    5.1 vim models.py
+            from django.db import models
+
+
+            # Create your models here.
+            class fsUser(models.Model):
+                Username = models.CharField(max_length=20)
+                Password = models.CharField(max_length=20)
+                Toll_allow = models.CharField(max_length=20)
+                User_context = models.CharField(max_length=20)
+    5.2 vim form_add.py
+            from django import forms
+            from models import fsUser
+
+
+            class fsUserForm(forms.ModelForm):
+                class Meta:
+                    model = fsUser
+                    fields = ('Username', 'Password', 'Toll_allow', 'User_context')
+    5.3 vim add_subscriber.html
+        {% extends "base.html" %}
+        {% block sidebar %}
+        <ul>
+            <li><a href="/subscriber">Cancel</a></li>
+        </ul>
+        {% endblock %}
+        {% block content %}
+        <form action="/subscriber/add/" method="post">{% csrf_token %}
+            <ul>
+                {{ form.as_ul }}
+            </ul>
+            <input type="submit" name="submit" value="Add">
+        </form>
+        {% endblock %}
+
+    5.4 vim views.py
+            def add(request):
+                if request.POST:
+                    form = fsUserForm(request.POST)
+                    if form.is_valid():
+                        form.save()
+                        return HttpResponseRedirect('/subscriber')
+                else:
+                    form = fsUserForm()
+                args = {}
+                args.update(csrf(request))
+                args['form'] = form
+                return render_to_response('add_subscriber.html', args)
