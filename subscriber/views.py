@@ -14,8 +14,13 @@ def hello(request):
 
 
 def all(request):
-    return render_to_response('base_subscriber.html',
-                              {'fsUser': fsUser.objects.all()})
+    return render_to_response('fsUsers.html',
+                              {'fsUsers': fsUser.objects.all()})
+
+
+def getUser(request, user_id=1):
+    return render_to_response('fsUser.html',
+                              {'fsUser': fsUser.objects.get(id=user_id)})
 
 
 def add(request):
@@ -29,4 +34,4 @@ def add(request):
     args = {}
     args.update(csrf(request))
     args['form'] = form
-    return render_to_response('add_subscriber.html', args)
+    return render_to_response('form_add_subscriber.html', args)

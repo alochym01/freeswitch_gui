@@ -7,3 +7,6 @@ class fsUser(models.Model):
     Password = models.CharField(max_length=20)
     Toll_allow = models.CharField(max_length=20)
     User_context = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return self.Username
