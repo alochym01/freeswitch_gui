@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <p>{{ fsUser.Username }} {{ fsUser.Password }} {{ fsUser.User_context }} {{ fsUser.Toll_allow }} <a href="/subscriber/edit/">Update</a> <a href="/subscriber/delete/">Delete</a></p>
+ </div>
+{% endblock %}

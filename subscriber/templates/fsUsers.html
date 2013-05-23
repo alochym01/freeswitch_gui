@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for user in fsUsers %}
+<div>
+    <p><a href="/subscriber/get/{{ user.id }}">{{ user.id }}</a>{{ user.Username }} {{ user.Password }} {{ user.User_context }} {{ user.Toll_allow }}</p
+</div>
+{% endfor %}
+{% endblock %}
+
