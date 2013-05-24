@@ -46,8 +46,6 @@ def update(request):
         user_id = request.POST['User_id']
         fsUser_id = fsUser.objects.get(id=user_id)
         if form.is_valid():
-        #    fsUser_id = fsUser.objects.get(id=request.POST['User_id'])
-#            print type(fsUser_id)
             fsUser_id.Username = form['Username'].value()
             fsUser_id.Password = form['Password'].value()
             fsUser_id.Toll_allow = form['Toll_allow'].value()
@@ -62,3 +60,9 @@ def update(request):
             args['form'] = form
             args['id'] = user_id
             return render_to_response('form_update_subscriber.html', args)
+
+
+def delete(request, user_id):
+    fsUser.objects.filter(id=user_id).delete()
+    print user_id
+    return HttpResponseRedirect('/subscriber')

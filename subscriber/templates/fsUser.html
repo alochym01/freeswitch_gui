@@ -2,6 +2,6 @@
 
 {% block content %}
 <div>
-    <p>{{ fsUser.Username }} {{ fsUser.Password }} {{ fsUser.User_context }} {{ fsUser.Toll_allow }} <a href="/subscriber/edit/{{ fsUser.id }}">Update</a> <a href="/subscriber/delete/">Delete</a></p>
+    <p>{{ fsUser.Username }} {{ fsUser.Password }} {{ fsUser.User_context }} {{ fsUser.Toll_allow }} <a href="/subscriber/edit/{{ fsUser.id }}">Update</a> <a href="/subscriber/delete/{{ fsUser.id }}">Delete</a></p>
  </div>
 {% endblock %}
