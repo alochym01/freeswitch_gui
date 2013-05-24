@@ -1,3 +1,4 @@
+Add record into DB you must do the following step
 1.  define table and columm of table in the app - models.py
 2.  define form that contains all the columm in models - form_add.py
 3.  define a html file to render for the form - add_subscriber.html
@@ -51,3 +52,61 @@
                 args.update(csrf(request))
                 args['form'] = form
                 return render_to_response('add_subscriber.html', args)
+
+Update record on database you must do the following step
+1.  define a html that contains the id of record - form_update_subscriber.html
+2.  define a views with id of record that render a html file in step 1 -
+views.edit function
+3.  define a views that handle the http.post to change record - views.update
+function
+4.  example:
+    4.1 vim form_update_subscriber.html
+        {% extends "base.html" %}
+        {% block sidebar %}
+        <ul>
+            <li><a href="/subscriber">Cancel</a></li>
+        </ul>
+        {% endblock %}
+        {% block content %}
+        <form action="/subscriber/update/" method="post">{% csrf_token %}
+            <ul>
+                <input id="id_User_id" name="User_id" type="hidden" value="{{ id }}"/>
+                {{ form.as_ul }}
+            </ul>
+            <input type="submit" name="submit" value="Update">
+        </form>
+        {% endblock %}
+
+    4.2 vim views
+        def edit(request, user_id):
+            fsUser_id = fsUser.objects.get(id=user_id)
+            form = fsUserForm(instance=fsUser_id)
+            args = {}
+            args.update(csrf(request))
+            args['form'] = form
+            args['id'] = user_id
+            return render_to_response('form_update_subscriber.html', args)
+
+    4.3 vim views
+            def update(request):
+                if request.POST:
+                    form = fsUserForm(request.POST)
+                    user_id = request.POST['User_id']
+                    fsUser_id = fsUser.objects.get(id=user_id)
+                    if form.is_valid():
+                        fsUser_id.Username = form['Username'].value()
+                        fsUser_id.Password = form['Password'].value()
+                        fsUser_id.Toll_allow = form['Toll_allow'].value()
+                        fsUser_id.User_context = form['User_context'].value()
+                        fsUser_id.save()
+                        return HttpResponseRedirect('/subscriber')
+                    else:
+                        fsUser_id = fsUser.objects.get(id=user_id)
+                        form = fsUserForm(instance=fsUser_id)
+                        args = {}
+                        args.update(csrf(request))
+                        args['form'] = form
+                        args['id'] = user_id
+                        return render_to_response('form_update_subscriber.html', args)
+
+
