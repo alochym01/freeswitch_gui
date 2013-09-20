@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="iso-8859-2" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+<!-- run on cli
+    sipp 118.69.190.30 -sf abc.xml -inf reg.csv -t u1 -m 100 -l 2 -r 2 -rp 1000 -trace_screen -i 118.69.190.30 -p 5888
+    -sf : load file xml
+    -inf : load external file csv
+    -t : u1 - [transport] = UDP
+    -m : 100 - run test to 100 and then stop
+    -l : 2 - simulation concurrent = 2
+    -r : 2 - call rate/second = 2
+    -r 15 -rp 1000 : 15 calls every second
+    -i : sets the local IP address - [local_ip]
+    -p : sets the local port number - [local_port]
+    file reg.csv content:
+        SEQUENTIAL
+        1000;118.69.190.30;[authentication username=1000 password=1234];33;
+-->
+
+<scenario name="UAC REGISTER + INVITE + call">
+  <send retrans="500">
+    <![CDATA[
+      REGISTER sip:[remote_ip] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field0]@[field1]>
+      Call-ID: [call_id]
+      CSeq: [cseq] REGISTER
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      Max-Forwards: 10
+      Expires: 120
+      User-Agent: SIPp/Win32
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!-- asterisk -->
+  <recv response="100" optional="true">
+  </recv>
+
+  <recv response="401" auth="true">
+  </recv>
+
+  <send retrans="500">
+    <![CDATA[
+      REGISTER sip:[remote_ip] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field0]@[field1]>
+      Call-ID: [call_id]
+      CSeq: [cseq] REGISTER
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      [field2]
+      Max-Forwards: 10
+      Expires: 120
+      User-Agent: SIPp/Win32
+      Content-Length: 0
+    ]]>
+  </send>
+
+  <recv response="200">
+  </recv>
+  <ResponseTimeRepartition value="10, 20, 30, 40, 50, 100, 150, 200"/>
+  <CallLengthRepartition value="10, 50, 100, 500, 1000, 5000, 10000"/>
+</scenario>
