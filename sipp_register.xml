@@ -11,6 +11,7 @@
     -r 15 -rp 1000 : 15 calls every second
     -i : sets the local IP address - [local_ip]
     -p : sets the local port number - [local_port]
+    -[remote_ip] : 118.69.190.30
     file reg.csv content:
         SEQUENTIAL
         1000;118.69.190.30;[authentication username=1000 password=1234];33;
