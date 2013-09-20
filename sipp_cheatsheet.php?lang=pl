@@ -1,0 +1,499 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META content="text/html; charset=ISO-8859-2"
+http-equiv="content-type">
+<meta name="robots" content="index,follow">
+<META NAME="Keywords" CONTENT="testowanie SIP, protokół SIP, testowanie urządzeń korzystających z protokołu SIP, przykłady użycia programu SIPp, SIP">  
+<META NAME="Author" CONTENT="Tomasz Ostrowski">
+<META name="description" content="Zbiór scenariuszy testowych i przykładów użycia programu SIPp - testowanie urządzeń wykorzystujących protoków SIP.">  
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../css/main.css">
+<script type="text/javascript" src="../../tree.js"></script>
+<title>SIPp - SIP testing tool cheatsheet</title>  
+</head>
+<body>
+
+<div id="wrap">
+<div id="header">
+<div id="header_l">
+  <a href="../../index.php?lang=pl">tomeko.net</a>
+</div>
+<div id="header_r"><A HREF="http://tomeko.net/other/sipp/sipp_cheatsheet.php?lang=en" TARGET="_self"><strong>ENGLISH VERSION</strong></A><br><A HREF="http://tomeko.net/other/sipp/sipp_cheatsheet.php?lang=pl" TARGET="_self"><strong>WERSJA POLSKA</strong></A></div>      
+</div>
+
+<a href="../../bot-trap/">
+  <img src="../../images/pixel.gif" border="0" alt=" " width="1" height="1">
+</a>
+     
+
+
+<div id="main">
+    <h1>SIPp cheatsheet</h1>
+    <p>
+    <a href="http://sipp.sourceforge.net/">SIPp</a> is a free test tool and traffic generator for the SIP protocol.
+    It uses XML format files to define test scenarios.     
+    </p>
+    <p class="code">
+    General usage: sipp remote_host[:remote_port] [options]
+    </p>
+    
+    <p>Some important command-line options:</p>
+    <dl class="code">
+    <dt>-sf filename</dt>
+        <dd>Load test scenario from specified file.</dd>
+    <dt>-inf filename</dt>
+        <dd>Use CSV file to insert data substituted for [field0], [field1], etc into XML scenario.
+        First line of file describes order of inserting field sets (SEQUENTIAL/RANDOM/USE).</dd>
+    <dt>-sn name</dt>
+        <dd>Use one of the embedded, predefined scenarios like "uac", "uas".</dd>
+    <dt>-r rate</dt>
+        <dd>Scenario execution rate, default value = 10 times per period, default period = 1000 ms.</dd>
+    <dt>-rp period</dt>
+        <dd>Scenario execution period [ms], combined with execution rate. Execution rate is combined of rate
+        and period parameters, i.e. if period = 3500 and rate = 7 there will be 7 calls in 3.5 s.</dd>
+    <dt>-t transport mode</dt>
+        <dd>Set the transport mode: "u1" - UDP, one socket (default), "un" - UDP, one socket per call, other modes (TCP and with compression) available.</dd>
+    <dt>-max_socket max</dt>
+        <dd>Set the limit for simultaneously used sockets (for one socket per call mode). If limit is reached, sockets are reused.</dd>
+    <dt>-m calls</dt>
+        <dd>Stop and exit after specified tests count.</dd>
+    <dt>-s service</dt>
+        <dd>Set user part of the request URI (default: 'service'). Replaces
+        [service] tag in XML scenario file.</dd>
+    <dt>-ap pass</dt>
+        <dd>Set password used for auth challenges (default: 'password').</dd>
+    <dt>-l limit</dt>
+        <dd>Limit simultaneous calls (default: 3 * call_duration (s) * rate).</dd>
+    <dt>-recv_timeout</dt>
+        <dd>Global receive timeout (miliseconds). By default call is aborted,
+        use ontimeout attribute to take other action.</dd>
+    <dt>-trace_msg</dt>
+        <dd>Log sent and received SIP messages (file: <i>scenario</i>_<i>pid</i>_messages.log).</dd>
+    <dt>-trace_err</dt>
+        <dd>Log error message to file (like "Discarding message which can't be mapped to a known SIPp call").</dd>
+    <dt>-sd</dt>
+        <dd>Dumps one of the default scenarios. Usage example: sipp -sd uas > uas.xml.</dd>
+    </dl>
+    
+    
+    <h2>Simple scenario files with usage</h2>
+    <p>These scenario files were tested with sipp-win32-2009-06-06.
+    </p>
+    
+    <h3>OPTIONS</h3>
+    <p>Send OPTIONS message 5 times to 30@192.168.1.211.</p>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/OPTIONS.xml">OPTIONS.xml</a> -m 5 -s 30
+    </pre>
+
+    <p>Send OPTIONS message 30 times to 30@192.168.1.211 waiting 200 ms for 200/OK reply each time.</p>
+    <img src="scenarios/images/OPTIONS_200.png" alt="SIPp OPTIONS + 200/OK scenario">    
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/OPTIONS_recv_200.xml">OPTIONS_recv_200.xml</a> -m 30 -s 30
+    </pre>
+    
+    <h3>REGISTER</h3>
+    <p>Register to 192.168.1.106 using parameters from CSV file. If CSV file has more than one
+    entry you can increase simultaneous call limit (-l option).
+    </p>
+    <img src="scenarios/images/REGISTER.png" alt="SIPp REGISTER with auth scenario">  
+    <pre>
+    sipp 192.168.1.106 -sf <a href="scenarios/REGISTER_client.xml">REGISTER_client.xml</a>
+      -inf <a href="scenarios/REGISTER_client.csv">REGISTER_client.csv</a> -m 1 -l 1 -trace_msg -trace_err    
+    </pre>
+    
+    <h3>REGISTER + SUBSCRIBE application/dialog-info+xml (BLF)</h3>
+    <p>Register to 192.168.1.211 using parameters from CSV file and start dialog-info subscription
+    (<a href="http://www.rfc-editor.org/rfc/rfc4235.txt">RFC4235</a>).
+    </p>
+    <img src="scenarios/images/REGISTER_SUBSCRIBE_dialog_info.png" alt="SIPp REGISTER and SUBSCRIBE dialog-info">
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/REGISTER_SUBSCRIBE_client.xml">REGISTER_SUBSCRIBE_client.xml</a>
+        -inf <a href="scenarios/REGISTER_SUBSCRIBE_client.csv">REGISTER_SUBSCRIBE_client.csv</a> -m 100 -l 2 -r 2
+    </pre>
+    
+    <h3>REGISTER + INVITE</h3>
+    <p>SIPp is simulating 3 UACs, each one of them is making outgoing call. This scenario expects calls to be answered.
+    Call targets are 3 other UACs configured
+    to auto answer and play wav file (single pjsua instance with 3 accounts).</p>
+    <img src="sipp_pjsua.png" alt="sipp and pjsua">
+    <pre>
+    pjsua_vc6d --local-port=5068
+        --id sip:33@192.168.1.211 --registrar sip:192.168.1.211
+        --proxy sip:192.168.1.211 --realm * --username 33 --password 33
+        --next-account --id sip:34@192.168.1.211 --registrar sip:192.168.1.211
+        --proxy sip:192.168.1.211 --realm * --username 34 --password 34
+        --next-account --id sip:35@192.168.1.211 --registrar sip:192.168.1.211
+        --proxy sip:192.168.1.211 --realm * --username 35 --password 35
+        --play-file file.wav --auto-answer 200 --auto-play
+    </pre>
+    <p>Each call is disconnected after 30 s.
+    Call limit is this time smaller than number of CSV entries to avoid multiple calls to single target.
+    </p>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/REGISTER_INVITE_client.xml">REGISTER_INVITE_client.xml</a>
+        -inf <a href="scenarios/REGISTER_INVITE_client.csv">REGISTER_INVITE_client.csv</a> -m 100 -l 2 -r 1 -rp 10000
+    </pre>
+
+
+    <h3>REGISTER + INVITE (2)</h3>
+    <p>Some modification may be needed when calling operator that is using more complex
+    proxy infrastructure.<br>
+    1) Handling SIP/407 after INVITE.<br>
+    2) Using rrs="true" and [routes] to keep Record-Route header set supplied by the operator.<br>
+    3) Using [next_url] in ACK and BYE messages.
+    </p>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/REGISTER_INVITE_client2.xml">REGISTER_INVITE_client2.xml</a>
+        -inf <a href="scenarios/REGISTER_INVITE_client.csv">REGISTER_INVITE_client.csv</a> -recv_timeout 10000 -m 1 -l 1
+    </pre>
+
+    <h3>INVITE + CANCEL immediately after SIP/100</h3>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/INVITE_CANCEL.xml">INVITE_CANCEL.xml</a> -recv_timeout 10000 -m 1 -l 1
+    </pre>
+    
+    <h3>INVITE with video stream SDP (H.263, H.264, AS/TIAS bandwidth modifiers)</h3>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/INVITE_SDP_video.xml">INVITE_SDP_video.xml</a> -recv_timeout 30000 -m 1 -l 1
+    </pre>
+    
+    <h3>INVITE + re-INVITE with T38 offer</h3>
+    <p>When detecting FAX tone 1st party sends re-INVITE with T38/image offer. Second
+    party rejects offer with 488/Not Acceptable Here but call should not be disconnected.
+    </p>
+    <pre>
+    sipp 192.168.0.192 -sf <a href="scenarios/INVITE_T38_reINVITE.xml">INVITE_T38_reINVITE.xml</a> -s 30 -r 1 -l 12 -m 1     
+    </pre>
+
+    
+    <h3>REGISTER UAS + SUBSCRIBE application/dialog-info+xml (BLF) UAS</h3>
+    <p>Little tricky scenario that requires two actual scenario files.
+    Sipp is simulating registration and BLF subscription server that immediately terminates
+    subscription with reason=noresource.<br>
+    1) With tested UAC create registration account 30@your_pc_ip_address, no password.
+    Create dialog-info+xml subscription for 108@your_pc_ip_address.<br>
+    2) Run UAS REGISTER scenario and wait for the phone to log in.
+    3) Break REGISTER scenario by hitting Ctrl+C and run UAS SUBSCRIBE scenario.
+    </p>
+    <pre>
+    sipp -sf <a href="scenarios/uas_register.xml">uas_register.xml</a>
+    sipp -sf <a href="scenarios/uas_subscribe.xml">uas_subscribe.xml</a>
+    </pre>
+    
+    <h3>REGISTER UAS sending unsolicited MWI NOTIFY messages</h3>
+    <p>Sending unsolicited message-summary events to registered phone (31@192.168.0.228)</p>
+    <pre>
+    sipp 192.168.0.228 -s 31
+      -sf <a href="scenarios/NOTIFY_MWI_unsolicited.xml">NOTIFY_MWI_unsolicited.xml</a> -m 1 -l 1 -r 1 -rp 1000
+    </pre>
+    
+    <h3>Session audit using UPDATE message</h3>
+    <p>DUT is expected to send 200/OK with SDP offer but not changing session parameters.
+    <pre>
+    sipp 192.168.0.228
+      -sf <a href="scenarios/INVITE_UPDATE_session_audit.xml">INVITE_UPDATE_session_audit.xml</a> -m 1 -l 1
+    </pre>    
+
+    <h3>REGISTER UAC + INVITE + DTMF INFO</h3>
+    <p>
+    1) SIP registration with authorization.<br>
+    2) Calling number 110. In my test extension 110 is FXS and is looped back to FXO port and call is answered by DISA.<br>
+    3) Dialing another 3-digit number using SIP INFO DTMF (Content-Type: application/dtmf-relay in this scenario). Call is not answered.<br>
+    4) Disconnecting. 
+    </p>
+    <p>Note: if using "application/dtmf" Content-Type (message body consisting of dtmf only) sign "*" should be encoded as "10" and "#" as "11".
+    </p>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/REGC_INVITE_INFO.xml">REGC_INVITE_INFO.xml</a>
+        -inf <a href="scenarios/REGC_INVITE_INFO.csv">REGC_INVITE_INFO.csv</a> -m 5 -l 1 -r 1 -rp 10000
+    </pre>
+
+    <h3>SIP digest leak test</h3>
+    <p>
+    SIP digest leak is a SIP phone vulnerability that allows attacker to get digest 
+    response from a phone and use it to guess password using brute-force method described first on
+    <a href="http://enablesecurity.com/resources/how-to-exploit-the-sip-digest-leak-vulnerability-by-using-voippack/">enablesecurity.com page</a>. Here are required steps:
+    </p>
+    <ol>
+      <li>attacker calls phone (direct IP call) sending INVITE frame,</li>
+      <li>callee picks up phone, connection is confirmed by both sites,</li>
+      <li>attacker does not send any RTP frames (at least does not have to) and just waits,</li>
+      <li>callee hangs up phone sending BYE request (probably throwing some profanities),</li>
+      <li>in response to BYE attacker sends SIP/401 or 407 message (authentification request),</li>
+      <li>if attack is successfull callee is sending BYE again with Authorization: Digest header added.</li>
+    </ol> 
+    <p>At this point attacker has authentification challenge (sent by him with 401/407 message) and response (received with last BYE).
+    Most likely there will be simplest SIP/2.0 authentification scheme used (<a href="http://tools.ietf.org/html/rfc2069">RFC2069</a>):
+    </p>
+    <pre>
+    ha1 = MD5(username ":" realm ":" password) 
+    ha2 = MD5(method ":" req_uri) 
+    response = MD5(ha1 ":" nonce ":" ha2)
+    </pre>
+    <p>Assuming that username and realm are known attacker can now use brute-force method to guess user password.  
+    </p>
+    <p>
+    There are few conditions that have to be met to make this scheme work:
+    </p>
+    <ul>
+      <li>SIP phone has to respond to authentication challenges sent by other sources than registration server(s) it is
+      using (as a note it works with one hardware phone and one softphone I've tested
+      (and those were all user agents I've tested)),</li>
+      <li>phone SIP port has to accessible to attacker, usally phone will be placed behind the Restricted Cone NAT and port would not be forwarded,</li>
+      <li>attacker would most likely have to know username and authentication realm used by target; for
+      better security you probably should not leave "realm" configuration field of SIP phone empty (it could respond to
+      challenges with any realm then making it easier to prepare attack),</li>
+      <li>guessing password through brute-fource would be time consuming or almost impossible for more complex passwords.</li>
+    </ul>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/uac_digest_leak.xml">uac_digest_leak.xml</a> -s 30 -m 1
+    </pre>
+    <p>Example result: <a href="digest_leak.log">digest_leak.log</a>.
+    </p>
+
+
+    <h3>Generating calls using G.729 codec</h3>
+    <p>If you ever had to make high-load call or even single-call tests with G.729(a) codec
+    then you may find out that finding a free softphone with G729a capability is not an easy task. Obviously pjsua
+    would be good choice, but it require downloading DirectX SDK, Intel Performance Primitives package and rebuilding from sources, so
+    it would take few hours to get working binary.    
+    </p>
+    <p>Another option is capturing RTP stream using Wireshark and playing it back when generating or receiving calls with SIPp.
+    Here is <a href="g729.7z">.pcap file with 2 minutes of G.729 RTP stream</a>.
+    This is actually recorded connection with some voice mail system. Extract this file to \pcap subdirectory of SIPp.
+    Included scenario is UAC call, to get credible load test results you can call i.e. some DISA or auto-attendant lines that will play some announcement back. 
+    </p>    
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/uac_pcap_G729.xml">uac_pcap_G729.xml</a> -l 1 -m 10
+    </pre>
+
+    <h3>Call with video payload from captured RTP (H.264)</h3>
+    <p><a href="H264.pcap">.pcap file with H.264 RTP stream</a>  
+    <pre>
+    sipp 127.0.0.1 -sf <a href="scenarios/uac_pcap_H264.xml">uac_pcap_H264.xml</a> -l 1 -m 1
+    </pre>
+    
+    <h3>Blind transfer</h3>
+    <p>Registration with authorization, call and blind transfer
+    </p>
+    <pre>
+    REGISTER ----------&gt;
+         100 &lt;---------- (optional)
+         401 &lt;---------- 
+    REGISTER ----------&gt;
+         100 &lt;---------- (optional)
+         200 &lt;----------
+      INVITE ----------&gt;
+         100 &lt;---------- (optional)
+         180 &lt;---------- (optional)
+         183 &lt;---------- (optional) 
+         200 &lt;----------
+         ACK ----------&gt;
+       Pause [   5000ms] 
+       REFER ----------&gt; 
+         200 &lt;---------- 
+      NOTIFY &lt;----------
+         200 ----------&gt; 
+      NOTIFY &lt;----------
+         200 ----------&gt;  
+       Pause [   1000ms] 
+         BYE ----------&gt;  
+         200 &lt;----------
+    </pre>
+    <pre>
+    sipp 192.168.1.211 -sf <a href="scenarios/REGISTER_INVITE_REFER.xml">REGISTER_INVITE_REFER.xml</a>
+        -inf <a href="scenarios/REGISTER_INVITE_REFER.csv">REGISTER_INVITE_REFER.csv</a> -m 1 -l 1 -r 1 -rp 10000
+    </pre>
+    
+    <h2>Running two or more scripts same time</h2>
+    <p>Simulating two endpoints with single script seems difficult if not impossible, so some tests requre running 
+    two or more separate scripts (e.g. one for caller: REGISTER + outgoing INVITE, second for callee) same time.
+    To synchronization between scripts create batch file:
+    </p>
+    <pre>
+    start cmd /K sipp [parameters1]
+    start cmd /K sipp [parameters2]
+    [Enter]
+    </pre>
+    <p>With /K switch new cmd window will stay open after sipp exit. /C switch closes cmd window on application exit.
+    If delay between scripts is needed (alternatively pause can be used inside scripts), e.g. callee must register
+    before caller executes use ping as follows: 
+    </p>
+    <pre>
+    start cmd /K sipp [parameters1]
+    ping -n 3 127.0.0.1 > nul         // pauses for 3 - 1 = 2 seconds total 
+    start cmd /K sipp [parameters2]
+    [Enter]
+    </pre> 
+    
+    
+    <h2>Pjsua as a scripted call generator</h2>
+    <p>Pjsua sleep command allows to pipe commands from prepared text file to pjsua in a timely manner
+    making it possible to use it as limited but very easy to use call generator.
+    </p>
+    <pre>
+    pjsua &lt; <a href="pjsua/commands.txt">commands.txt</a>
+    </pre>    
+    
+    <h2>Tools to generate scenario files from Wireshark traces</h2>
+    <p>
+    <a href="http://svnview.digium.com/svn/sniff2sipp/">sniff2sipp - hosted by Digium, Perl script</a><br>
+    <a href="http://sourceforge.net/projects/sippie/">Sippie (Sourceforge), Java based</a>
+    </p>    
+    
+    
+    <h2>Sipsak</h2>
+    <p>For simple tasks such as sending single SIP message to remote destination
+    <a href="http://sipsak.org/">sipsak</a> may be handy.
+    </p>
+    <p>Sending OPTION message:</p>
+    <pre>
+    sipsak -vv -s sip:192.168.1.10:5060    
+    </pre>
+    <p>Sending custom message (NOTIFY Event: check-sync;reboot=true causing yealink phone to reboot):</p>
+    <pre>
+    sipsak -f <a href="sipsak/reboot_yealink.sipfile">reboot_yealink.sipfile</a> -s sip:1234@192.168.0.195    
+    </pre>
+    
+</div>
+
+
+
+<div id="sidebar">
+<h3>Sitemap</h3>
+
+<ul id="tree0" class="tree">
+
+    <li ><a>PROJEKTY</a>
+    <ul>
+    <li><A HREF="../../programator.php?lang=pl" TARGET="_self">Programator FLASH 49F</A></li>
+    <li><A HREF="../../termometr.php?lang=pl" TARGET="_self">Web thermometer</A></li>
+    <li><A HREF="../../mikroserwer.php?lang=pl" TARGET="_self">Mikroserwer ISA</A></li>
+    <li><a href="../../mikroserwerPIC.php?lang=pl" TARGET="_self">Mikroserwer PIC18F67J60</A></li>
+    <li><A HREF="../../PCpilot.php?lang=pl" TARGET="_self">Pilot PC wg Igora Cesko</A></li>
+    <li><A HREF="../../miniscope.php?lang=pl" TARGET="_self">Single chip mini-DSO</A></li>
+    <li><A HREF="../../fastPICCDC.php?lang=pl" TARGET="_self">PIC USB CDC</A></li>
+    <li><A HREF="../../pickit2.php?lang=pl" TARGET="_self">PICKIT 2</A></li>
+    <li><A HREF="../../ARMboard.php?lang=pl" TARGET="_self">AT91SAM7S low cost board</A></li>
+    <li><a href="../../dsoundscope/index.php?lang=pl" TARGET="_self">Oscyloskop DirectSound</a></li>    
+    <li><A HREF="../../miniscope_v2.php?lang=pl" TARGET="_self">Oscyloskop v2</A></li>
+    <li><A HREF="../../miniscope_v2a.php?lang=pl" TARGET="_self">Oscyloskop v2a</A></li>
+    <li><A HREF="../../miniscope_v2b/index.php?lang=pl" TARGET="_self">Oscyloskop v2b</A></li>
+    <li><A HREF="../../miniscope_v2c/index.php?lang=pl" TARGET="_self">Oscyloskop v2c</A></li>
+    <li><A HREF="../../miniscope_v2d/index.php?lang=pl" TARGET="_self">Oscyloskop v2d</A></li>
+    <li><a href="../../miniscope_v3/index.php?lang=pl" TARGET="_self">Oscyloskop v3</a></li>    
+    <li><a href="../../miniscope_v4/index.php?lang=pl" TARGET="_self">Oscyloskop v4</a></li>    
+    <li><A HREF="../../misc.php?lang=pl" TARGET="_self">Różności</A></li>
+    <li><A HREF="../../projects/TEA5767_radio/index.php?lang=pl" TARGET="_self">TEA5767 radio</A></li>    
+    <li><A HREF="../../projects/USB_1_wire_adapter/index.php?lang=pl" TARGET="_self">Konwerter USB/1-wire</A></li>    
+    <li><A HREF="../../uCboards.php?lang=pl" TARGET="_self">uC starterkits</A></li>
+    <li><A HREF="../../semi_commercial/index.php?lang=pl" TARGET="_self">Semi-commercial</A></li>    
+    </ul>
+    </li>
+    
+    <li><a>PROGRAMY</a>
+    <ul>
+    <li><A HREF="../../freegg.php?lang=pl" TARGET="_self">Free GG</A></li>
+    <li><A HREF="../../oterm.php?lang=pl" TARGET="_self">OTerm</A></li>
+    <li><A HREF="../../software/JSONedit/index.php?lang=pl" TARGET="_self">JSONedit</A></li>
+    <li><A HREF="../../software/OperaVideoCachePlayer/index.php?lang=pl" TARGET="_self">Opera Video Cache player</A></li>
+    <li><A HREF="../../software/SIPclient/index.php?lang=pl" TARGET="_self">Klient SIP</A></li>
+    <li><A HREF="../../software/RawDiskViewer/index.php?lang=pl" TARGET="_self">RAW disk viewer</A></li>    
+    <li><A HREF="../../software/CbxConverter/index.php?lang=pl" TARGET="_self">CbxConverter</A></li>    
+    <li><A HREF="../../soft.php?lang=pl" TARGET="_self">Inne</A></li>
+    </ul>
+    </li>
+    
+    <li><a>NARZĘDZIA ONLINE</a>
+    <ul>
+    <li><a href="../../online_tools/base64.php?lang=pl" TARGET="_self">Base64 -> HEX</a></li>
+    <li><a href="../../online_tools/base32.php?lang=pl" TARGET="_self">Base32 -> HEX</a></li>
+    <li><a href="../../online_tools/ascii.php?lang=pl" TARGET="_self">ASCII -> HEX</a></li>
+    <li><a href="../../online_tools/hex_to_base64.php?lang=pl" TARGET="_self">HEX -> Base64</a></li>
+    <li><a href="../../online_tools/hex_to_base32.php?lang=pl" TARGET="_self">HEX -> Base32</a></li>
+    <li><a href="../../online_tools/hex_to_ascii.php?lang=pl" TARGET="_self">HEX -> ASCII</a></li>
+    <li><a href="../../online_tools/md5.php?lang=pl" TARGET="_self">Kalkulator MD5</a></li>
+    <li><a href="../../online_tools/regexp.php?lang=pl" TARGET="_self">Regular exp.</a></li>
+    <li><a href="../../online_tools/cpp_text_escape.php?lang=pl" TARGET="_self">Text -&gt; Cpp</a></li>
+    </ul>
+    </li>
+    
+
+    <li><a>INNE</a>
+      <ul>
+        <li><a href="../../snippets.php?lang=pl">Code Snippets</a></li>
+        <li><a href="../../other/sipp/sipp_cheatsheet.php?lang=pl">SIPp</a></li>
+        <li><a href="../../other/SIPp-MinGW/index.php?lang=en">SIPp/MinGW</a></li>        
+        <li><a href="../../other/linux/command_line_cheatsheet.php">Linux command line</a></li>
+        <li><a href="../../other/lpt_winxp/lpt_winxp.php?lang=pl">LPT WinXP</a></li>
+        <li><a href="../../other/avrdude/building_avrdude.php?lang=pl">Avrdude/MinGW</a></li>
+        <li><a href="../../reviews/dell_d600.php?lang=pl">Dell D600</a></li>
+      </ul>
+    </li>
+    <li><A HREF="../../linki.php?lang=pl" TARGET="_self">Linki</A></li>
+    <li><A HREF="../../hist_strony.php?lang=pl" TARGET="_self">Co nowego?</A></li>
+    <li><A HREF="../../kontakt.php?lang=pl" TARGET="_self">Kontakt</A></li></ul>
+<script type="text/javascript">
+<!--
+new tree("tree0");
+//-->
+</script>
+
+<br>  
+
+<form action="http://www.google.com/cse" id="cse-search-box" target="_blank">
+  <div>
+    <input type="hidden" name="cx" value="partner-pub-0627417362141126:kryag762njr">
+    <input type="hidden" name="ie" value="ISO-8859-2">
+    <input type="text" name="q" size="16">
+    <input type="submit" name="sa" value="Search">
+  </div>
+</form>
+<script type="text/javascript" src="http://www.google.com/cse/brand?form=cse-search-box&amp;lang=en"></script>
+
+
+
+  <script type="text/javascript"><!--
+  google_ad_client = "ca-pub-0627417362141126";
+  /* wide_skyscraper */
+  google_ad_slot = "5345588041";
+  google_ad_width = 160;
+  google_ad_height = 600;
+  //-->
+  </script>
+  <script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+  </script>  
+      
+    
+</div>
+
+
+<div id="footer">
+
+
+<script type="text/javascript"><!--
+google_ad_client = "pub-0627417362141126";
+/* 728x90, utworzono 10-03-06 */
+google_ad_slot = "5895024682";
+google_ad_width = 728;
+google_ad_height = 90;
+//-->
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+  
+</div>
+
+
+<br>
+<div id="footer2"><p>      
+      <font size="-2">&nbsp;"Cookie monsters": 822098&nbsp;&nbsp;&nbsp;&nbsp;Parse time:&nbsp;1.991 s</font>
+  </p>
+	</div>
+</div>
+</body>
+</html>
+
