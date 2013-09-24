@@ -1,0 +1,91 @@
+    Auto testing tool for SIP – SIPP
+
+I.  Giới thiệu:
+    .1  SIPP là tool dùng để benchmark năng lực của SIP Server bằng cách tạo ra lưu lượng:
+        i.  Tạo ra lưu lượng REGISTER(đăng ký) tới SIP SERVER
+        ii. Tạo ra lưu lượng INVITE(gọi ra/vào) tới SIP SERVER
+            1.  Hỗ trợ thêm phần tạo ra RTP(thoại) thông qua 1 file đã được ghi âm sẵn
+    .2  SIPP hỗ trợ các giao thức:
+        i.      SIP – TLS
+        ii.     SIP – no TLS
+        iii.    SCTP
+    .3  SIPP được dùng như là:
+        i.  SIP client
+        ii. SIP server
+    .4  SIPP version 3.3 - http://sipp.sourceforge.net
+II. Cài đặt:
+    .1  Thông qua repo của Fedora project
+    .2  yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    .3  yum install sipp
+III.    Kịch bản benchmark dùng SIPP:
+    .1  SIPP hỗ trợ nhiều kịch bản benchmark khác nhau
+        a.  REGISTER only
+        b.  RESGITER + INVITE
+        c.  INVITE only
+    .2  Hiện tại chỉ benchmark phần kịch bản INVITE only:
+     SIPp UAC               SIP SERVER
+        |(1)   INVITE           |
+        |---------------------->|
+        |(2)   100 (optional)   |
+        |<----------------------|
+        |(3)   180 (optional)   |
+        |<----------------------|
+        |(4)   407 Auth         |
+        |<----------------------|
+        |(5)   ACK              |
+        |---------------------->|
+        |(6)   INVITE(user/pass)|
+        |---------------------->|
+        |(7)   100 (optional)   |
+        |<----------------------|
+        |(8)   180 (optional)   |
+        |<----------------------|
+        |(9)   200              |
+        |<----------------------|
+        |                       |
+        |(10)  MEDIA            |
+        |<----------------------|
+        |                       |
+        |(11)  BYE              |
+        |---------------------->|
+        |(12)  200              |
+        |<----------------------|
+    .3  Các options của SIPP hỗ trợ phần INVITE only:
+        a.  –sf : load file xml config dùng để định nghĩa kịch bản benchmark
+        b.  –inf : load file chứa các biến được định nghĩa sẵn
+        c.  –t : u1 – chạy cho UDP protocol(transport)
+        d.  –i : chọn card ethernet cho SIPP client(local_ip)
+        e.  –p : chọn port cho SIPP client(local_port)
+        f.  –m : số lượng call sẽ được thực hiện và kết thúc
+        g.  –r : tần suất gọi trên 1 giây – rate. Các option:
+            i.  –rp : tần suất call trong 1 khoảng thời gian(ms)
+            ii. Ví dụ: 
+                1.  -r 5 –rp 3000 => 5 calls trong vòng 3s
+                2.  –r 7 –rp 1000 => 7 calls trong vòng 1s
+        h.  –l : số lượng call đồng thời được call 
+            i.  default = 3 * call_duration(s) * rate
+            ii. call_duration được đặt trong file xml -> <pause milliseconds="60000" />
+IV. Bước thực hiện benchmark:
+    .1  Tạo kịch bản benchmark – sip_invite.xml
+    .2  Tao file định nghĩa các biến dùng trong sip_invite.xml
+    .3  Chạy lệnh sip:
+    a.  Ví dụ 1:
+        i.  sipp sip_server_ip -sf sip_invite.xml -inf sip_invite.csv -t u1 -i sip_client_ip -p sip_client_port -t u1 -m 100 -r 5
+        ii. Cứ 1s sẽ khởi tạo 5 calls tới SIP SERVER và kết thúc ở call thứ 100
+    b.  Ví dụ 2:
+        i.  sipp sip_server_ip -sf sip_invite.xml -inf sip_invite.csv -t u1 -i sip_client_ip -p sip_client_port -t u1 -m 100 -r 7 -rp 2000
+        ii. Cứ 2s sẽ khởi tạo 7 calls tới SIP SERVER và kết thúc ở call thứ 100
+    c.  Ví dụ 3:
+        i.  sipp sip_server_ip -sf sip_invite.xml -inf sip_invite.csv -t u1 -i sip_client_ip -p sip_client_port -t u1 -m 100 -r 8 -rp 2000 -l 15
+        ii. Sẽ khởi tạo 15 calls tới SIP SERVER trong vong 2s và kết thúc ở call thứ 100
+V.  File định nghĩa mẫu – sip_invite.csv:
+    .1  Cấu trúc file:
+    .2  SEQUENTIAL/USER/RANDOM – thuật toán
+    .3  field0;field1;field2;field3;…
+    .4  Nội dung file sip_invite.csv:
+        SEQUENTIAL
+        1008    ;   118.69.190.30   ;   [authentication username=1008 password=1234];5000;
+          ^     ;         ^         ;                   ^                           ;  ^
+        field0  ;       field1      ;               field2                          ;field3
+VI. File kịch bản benchmark mẫu – sip_invite.xml:
+Xem redmine ticket 6412 - https://redmine.rad.fpt.net/issues/6412
