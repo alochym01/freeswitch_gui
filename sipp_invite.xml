@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="iso-8859-2" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<scenario name="INVITEcall">
+
+<!--  Use with CSV file struct like: 32;192.168.1.211;[authentication username=32 password=32];21;
+      (user part of uri, server address, auth tag, call target)
+      sipp 118.69.190.30 -sf sipp_invite.xml -inf sipp_invite.csv -t u1 -m 10 -l 5 -r 5 -rp 1000 -trace_screen -i 118.69.190.30 -p 5888
+
+-->
+
+  <send retrans="500">
+    <![CDATA[
+
+      INVITE sip:[field3]@118.69.190.30:5060 SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: sipp <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field3]@[field1]:5060>
+      Call-ID: [call_id]
+      CSeq: [cseq] INVITE
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      Max-Forwards: 100
+      Content-Type: application/sdp
+      Content-Length: [len]
+
+      v=0
+      o=user1 53655765 2353687637 IN IP[local_ip_type] [local_ip]
+      s=-
+      c=IN IP[media_ip_type] [media_ip]
+      t=0 0
+      m=audio [media_port] RTP/AVP 8
+      a=rtpmap:8 PCMA/8000
+
+    ]]>
+  </send>
+
+  <recv response="100" optional="true">
+  </recv>
+  
+  <recv response="407" auth="true">
+  </recv>
+  
+  <send>
+    <![CDATA[
+
+      ACK sip:[field3]@118.69.190.30:5060 SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch-3]
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      [last_To:]
+      Call-ID: [call_id]
+      CSeq: [cseq] ACK
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      Max-Forwards: 100
+      Content-Length: 0
+
+    ]]>
+  </send>  
+  
+  <send retrans="500">
+    <![CDATA[
+
+      INVITE sip:[field3]@118.69.190.30:5060 SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: sipp <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field3]@[field1]:5060>
+      Call-ID: [call_id]
+      CSeq: [cseq] INVITE
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      [field2]      
+      Max-Forwards: 100
+      Content-Type: application/sdp
+      Content-Length: [len]
+
+      v=0
+      o=user1 53655765 2353687637 IN IP[local_ip_type] [local_ip]
+      s=-
+      c=IN IP[media_ip_type] [media_ip]
+      t=0 0
+      m=audio [media_port] RTP/AVP 8
+      a=rtpmap:8 PCMA/8000
+
+    ]]>
+  </send>  
+
+  <recv response="100" optional="true">
+  </recv>    
+
+  <recv response="180" optional="true">
+  </recv>
+
+  <recv response="183" optional="true">
+  </recv>
+
+  <recv response="200" rrs="true">
+  </recv>
+
+  <send>
+    <![CDATA[
+
+      ACK [next_url] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch-5]
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      [last_To:]
+      [routes]
+      Call-ID: [call_id]
+      CSeq: [cseq] ACK
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      Max-Forwards: 100
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!-- Play a pre-recorded PCAP file (RTP stream)                       -->
+  <!--nop>
+    <action>
+      <exec play_pcap_audio="pcap/g711a.pcap"/>
+    </action>
+  </nop-->
+
+  <!-- Pause 60 seconds, which is less than the duration of the      -->
+  <pause milliseconds="60000" />
+
+  <send retrans="500">
+    <![CDATA[
+
+      BYE [next_url] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch-7]
+      From: <sip:[field0]@[field1]>;tag=[call_number]      
+      [last_To:]
+      [routes]
+      Call-ID: [call_id]
+      CSeq: [cseq] BYE
+      Contact: sip:sipp@[local_ip]:[local_port]
+      Max-Forwards: 100
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!-- The 'crlf' option inserts a blank line in the statistics report. -->
+  <recv response="200" crlf="true">
+  </recv>
+
+  <ResponseTimeRepartition value="10, 20, 30, 40, 50, 100, 150, 200"/>
+  <CallLengthRepartition value="10, 50, 100, 500, 1000, 5000, 10000"/>
+
+</scenario>
+
